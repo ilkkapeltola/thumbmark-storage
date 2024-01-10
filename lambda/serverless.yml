@@ -1,0 +1,88 @@
+service: thumbmark-storage
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  region: eu-central-1
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'test'}
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${sls:stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+#            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+#            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+plugins:
+  - serverless-esbuild
+  - serverless-dynamodb
+  - serverless-offline
+  - serverless-domain-manager
+
+custom:
+  domain:
+    test: storage-test.thumbmarkjs.com
+    prod: storage.thumbmarkjs.com
+  dynamodb:
+    stages:
+      - test
+    start:
+        port: 8000
+        inMemory: false
+        migrate: true
+  customDomain:
+    domainName: ${self:custom.domain.${self:provider.stage}}
+    basePath: 'v1'
+    createRoute53Record: true
+    stage: ${self:provider.stage}
+    certificateName: thumbmarkjs.com
+
+functions:
+  create:
+    handler: storage/create.create
+    timeout: 30
+    events:
+      - http:
+          path: fingerprint
+          method: post
+          cors: true
+
+  get:
+    handler: storage/get.get
+    events:
+      - http:
+          path: fingerprint/{namespace}/{fingerprint}/{key}
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    ThumbmarkStorageTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: fingerprint
+            AttributeType: S
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: fingerprint
+            KeyType: HASH
+          - AttributeName: key
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 25
+          WriteCapacityUnits: 25
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        TimeToLiveSpecification:
+          Enabled: true
+          AttributeName: expiresAt

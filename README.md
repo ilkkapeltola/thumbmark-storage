@@ -1,1 +1,0 @@
-# thumbmark-store
