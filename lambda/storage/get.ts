@@ -24,7 +24,12 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
 
     const response: APIGatewayProxyResult = {
       statusCode: 200,
-      body: JSON.stringify(result.Item.value.S)
+      body: JSON.stringify(result.Item.value.S),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow_headers': true,
+        'Content-type': 'application/json'
+      }
     };
 
     return response
@@ -32,7 +37,12 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
   } catch (error) {
     const response: APIGatewayProxyResult = {
       statusCode: 500,
-      body: JSON.stringify(error.message)
+      body: JSON.stringify(error.message),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow_headers': true,
+        'Content-type': 'application/json'
+      }
     }
     return response
   }
