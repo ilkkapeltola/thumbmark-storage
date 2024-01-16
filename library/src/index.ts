@@ -7,7 +7,7 @@ export interface storageOptionsInterface {
 }
 
 const options: storageOptionsInterface = {
-    storageUrl: 'https://storage-test.thumbmarkjs.com/v1/fingerprint',
+    storageUrl: 'https://storage.thumbmarkjs.com/v1/fingerprint',
     namespace: 'thumbmarkjs'
 }
 

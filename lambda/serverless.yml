@@ -26,7 +26,7 @@ plugins:
   - serverless-esbuild
   - serverless-dynamodb
   - serverless-offline
-  - serverless-domain-manager
+#  - serverless-domain-manager # uncomment if you want to use custom domain
 
 custom:
   domain:

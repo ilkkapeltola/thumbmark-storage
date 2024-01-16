@@ -21,7 +21,7 @@ module.exports = {
     path: path.resolve(__dirname, 'build'),
     //module: 'esnext',
     library: {
-      name: 'ThumbmarkJSStore',
+      name: 'ThumbmarkStore',
       type: 'umd'
     }
   },
