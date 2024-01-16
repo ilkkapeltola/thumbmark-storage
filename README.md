@@ -25,6 +25,8 @@ And after, gets it back and prints to console. Both methods return a promise.
 </script>
 ```
 
+
+
 ## How it works
 
 The library `ThumbmarkStore` has methods `getItem(key)` and `putItem(key, value)`. Since the `ThumbmarkStore` utilizes the fingerprinting library `ThumbmarkJS`, it calculates the fingerprint, which acts (together with a `namespace`, more about that later) as the unique store identifyer. When calling the `setItem('foo', 'bar')`, the backend stores the value `bar` together with the `namespace`, `fingerprint` and `key`.
@@ -40,3 +42,9 @@ Cookies are more intrusive. Cookies require consent, while this approach, when c
 This backend as well is set up so that keys are erased after 24 hours. And for as long as you don't store personal information and the data is only for analytics, it seems that at least Matomo considers this not to require tracking consent either.
 
 But your use case might be different. It's your responsibility to ensure you adhere to all the local laws etc. This library is only for educational purposes. I take no responsibility of anything.
+
+## Can I use this?
+
+Feel free to give this a go. However, while the lambda will scale, the DynamoDB table is not provisioned for gazillions of operations per second. Thus, if you need this in a production environment, better to deploy your own Lambda (or equivalent), and point the library to it instead. You can set the `ThumbmarkStore.options.storageUrl` to be something else. Currently it is set to `https://storage.thumbmarkjs.com/v1/fingerprint`.
+
+Everything you need to deploy your own lambda is in the [Lambda folder](lambda/).
