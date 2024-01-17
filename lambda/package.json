@@ -19,6 +19,7 @@
     "aws-sdk": "^2.1532.0",
     "esbuild": "^0.19.0",
     "serverless-domain-manager": "^7.3.3",
+    "serverless-dotenv-plugin": "^6.0.0",
     "serverless-dynamodb": "^0.2.47",
     "serverless-esbuild": "^1.46.0",
     "serverless-offline": "^13.3.2",

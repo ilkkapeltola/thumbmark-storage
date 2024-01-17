@@ -1,6 +1,8 @@
-service: thumbmark-storage
+useDotenv: true
 
 frameworkVersion: "3"
+
+service: ${env:SERVICE_NAME}
 
 provider:
   name: aws
@@ -9,6 +11,10 @@ provider:
   stage: ${opt:stage, 'test'}
   environment:
     DYNAMODB_TABLE: ${self:service}-${sls:stage}
+    SERVICE_NAME: ${env:SERVICE_NAME}
+    TEST_DOMAIN: ${env:TEST_DOMAIN}
+    PROD_DOMAIN: ${env:PROD_DOMAIN}
+    CERTIFICATE_NAME: ${env:CERTIFICATE_NAME}
   iam:
     role:
       statements:
@@ -26,12 +32,12 @@ plugins:
   - serverless-esbuild
   - serverless-dynamodb
   - serverless-offline
-#  - serverless-domain-manager # uncomment if you want to use custom domain
+  - serverless-domain-manager # uncomment if you want to use custom domain
 
 custom:
   domain:
-    test: storage-test.thumbmarkjs.com
-    prod: storage.thumbmarkjs.com
+    test: ${env:TEST_DOMAIN}
+    prod: ${env:PROD_DOMAIN}
   dynamodb:
     stages:
       - test
@@ -44,7 +50,7 @@ custom:
     basePath: 'v1'
     createRoute53Record: true
     stage: ${self:provider.stage}
-    certificateName: thumbmarkjs.com
+    certificateName: ${env:CERTIFICATE_NAME}
 
 functions:
   create:
@@ -80,8 +86,8 @@ resources:
           - AttributeName: key
             KeyType: RANGE
         ProvisionedThroughput:
-          ReadCapacityUnits: 25
-          WriteCapacityUnits: 25
+          ReadCapacityUnits: 1  # this is only for testing
+          WriteCapacityUnits: 1 # this is only for testing
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
         TimeToLiveSpecification:
           Enabled: true
