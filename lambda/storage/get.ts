@@ -5,6 +5,9 @@ import { APIGatewayProxyEvent, Context, APIGatewayProxyResult, Handler } from 'a
 import { GetItemCommand, GetItemInput } from '@aws-sdk/client-dynamodb'
 
 export const get: Handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  const headers = {
+    'Content-type': 'application/json'
+  }
   try {
 
     const errors = validationErrors(event)
@@ -22,29 +25,25 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
     const command = new GetItemCommand(params);
     const result = await dynamoDb.send(command);
 
-    const response: APIGatewayProxyResult = {
+    if (!result.Item) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Item not found' }),
+        headers: headers
+      } as APIGatewayProxyResult;
+      
+    }
+    return {
       statusCode: 200,
       body: JSON.stringify(result.Item.value.S),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow_headers': true,
-        'Content-type': 'application/json'
-      }
-    };
-
-    return response
-
+      headers: headers
+    }
   } catch (error) {
-    const response: APIGatewayProxyResult = {
+    return {
       statusCode: 500,
       body: JSON.stringify(error.message),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow_headers': true,
-        'Content-type': 'application/json'
-      }
+      headers: headers
     }
-    return response
   }
 }
 

@@ -29,6 +29,7 @@ provider:
           Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
 
 plugins:
+  - serverless-better-credentials
   - serverless-esbuild
   - serverless-dynamodb
   - serverless-offline
@@ -38,6 +39,10 @@ custom:
   domain:
     test: ${env:TEST_DOMAIN}
     prod: ${env:PROD_DOMAIN}
+  allowedOrigins:
+    test:
+      - '*'
+    prod: ${file(env.js):allowedOrigins}
   dynamodb:
     stages:
       - test
@@ -60,7 +65,16 @@ functions:
       - http:
           path: fingerprint
           method: post
-          cors: true
+          cors:
+            origins: ${self:custom.allowedOrigins.${self:provider.stage}, '*'}
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
 
   get:
     handler: storage/get.get
@@ -68,13 +82,44 @@ functions:
       - http:
           path: fingerprint/{namespace}/{fingerprint}/{key}
           method: get
-          cors: true
+          cors:
+            origins: ${self:custom.allowedOrigins.${self:provider.stage}, '*'}
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+
+
 
 resources:
+  Conditions:
+    IsTest:
+      Fn::Equals:
+        - ${self:provider.stage}
+        - test
+    IsProd:
+      Fn::Equals:
+        - ${self:provider.stage}
+        - prod
   Resources:
     ThumbmarkStorageTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
+        ProvisionedThroughput:
+          Fn::If:
+            - IsTest
+            - ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+            - Ref: 'AWS::NoValue'
+        BillingMode:
+          Fn::If:
+            - IsProd
+            - PAY_PER_REQUEST
+            - PROVISIONED
         AttributeDefinitions:
           - AttributeName: fingerprint
             AttributeType: S
@@ -85,9 +130,6 @@ resources:
             KeyType: HASH
           - AttributeName: key
             KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1  # this is only for testing
-          WriteCapacityUnits: 1 # this is only for testing
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
         TimeToLiveSpecification:
           Enabled: true
