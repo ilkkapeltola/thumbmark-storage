@@ -5,15 +5,29 @@ import { APIGatewayProxyEvent, Context, APIGatewayProxyResult, Handler } from 'a
 import { GetItemCommand, GetItemInput } from '@aws-sdk/client-dynamodb'
 
 export const get: Handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-  const headers = {
+  const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
+  const requestOrigin = event.headers.origin || event.headers.referer as string
+  
+  let headers = {
     'Content-type': 'application/json'
   }
+  if (allowedOrigins.includes(requestOrigin))
+    headers['Access-Control-Allow-Origin'] = requestOrigin
+  else if (allowedOrigins.includes('*'))
+    headers['Access-Control-Allow-Origin'] = '*'
+  else
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ message: 'Origin not allowed: ' + " " + requestOrigin }),
+      headers: headers
+    }
+
   try {
 
     const errors = validationErrors(event)
     if (errors) { throw errors }
 
-    const namespaceAndFingerprint: string = [event.pathParameters?.namespace, event.pathParameters?.fingerprint].join('|');
+    const namespaceAndFingerprint: string = [event.pathParameters?.namespace, event.pathParameters?.fingerprint].join('|')
     const params: GetItemInput = {
       TableName: process.env.DYNAMODB_TABLE as string,
       Key: {
@@ -22,15 +36,15 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
       }
     };
 
-    const command = new GetItemCommand(params);
-    const result = await dynamoDb.send(command);
+    const command = new GetItemCommand(params)
+    const result = await dynamoDb.send(command)
 
     if (!result.Item) {
       return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Item not found' }),
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Item not found: ' + " " + requestOrigin + " " + allowedOrigins as string }),
         headers: headers
-      } as APIGatewayProxyResult;
+      }
       
     }
     return {

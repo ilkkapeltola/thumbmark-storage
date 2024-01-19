@@ -11,10 +11,7 @@ provider:
   stage: ${opt:stage, 'test'}
   environment:
     DYNAMODB_TABLE: ${self:service}-${sls:stage}
-    SERVICE_NAME: ${env:SERVICE_NAME}
-    TEST_DOMAIN: ${env:TEST_DOMAIN}
-    PROD_DOMAIN: ${env:PROD_DOMAIN}
-    CERTIFICATE_NAME: ${env:CERTIFICATE_NAME}
+    ALLOWED_ORIGINS: ${self:custom.allowedOriginsString.${self:provider.stage}}
   iam:
     role:
       statements:
@@ -30,19 +27,19 @@ provider:
 
 plugins:
   - serverless-better-credentials
+  - serverless-plugin-utils
   - serverless-esbuild
   - serverless-dynamodb
+  - serverless-domain-manager # uncomment if you want to use custom domain.
   - serverless-offline
-  - serverless-domain-manager # uncomment if you want to use custom domain
 
 custom:
   domain:
-    test: ${env:TEST_DOMAIN}
-    prod: ${env:PROD_DOMAIN}
-  allowedOrigins:
-    test:
-      - '*'
-    prod: ${file(env.js):allowedOrigins}
+    test: ${env:DOMAIN_TEST}
+    prod: ${env:DOMAIN_PROD}
+  allowedOriginsString:
+    test: ${env:ALLOWED_ORIGINS_TEST}
+    prod: ${env:ALLOWED_ORIGINS_PROD}
   dynamodb:
     stages:
       - test
@@ -66,10 +63,11 @@ functions:
           path: fingerprint
           method: post
           cors:
-            origins: ${self:custom.allowedOrigins.${self:provider.stage}, '*'}
+            origins: ${split(${self:provider.environment.ALLOWED_ORIGINS}, ',')}
             headers:
               - Content-Type
               - X-Amz-Date
+              - Content-Type
               - Authorization
               - X-Api-Key
               - X-Amz-Security-Token
@@ -83,17 +81,16 @@ functions:
           path: fingerprint/{namespace}/{fingerprint}/{key}
           method: get
           cors:
-            origins: ${self:custom.allowedOrigins.${self:provider.stage}, '*'}
+            origins: ${split(${self:provider.environment.ALLOWED_ORIGINS}, ',')}
             headers:
               - Content-Type
               - X-Amz-Date
+              - Content-Type
               - Authorization
               - X-Api-Key
               - X-Amz-Security-Token
               - X-Amz-User-Agent
             allowCredentials: false
-
-
 
 resources:
   Conditions:
@@ -109,17 +106,20 @@ resources:
     ThumbmarkStorageTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
-        ProvisionedThroughput:
-          Fn::If:
-            - IsTest
-            - ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
-            - Ref: 'AWS::NoValue'
-        BillingMode:
-          Fn::If:
-            - IsProd
-            - PAY_PER_REQUEST
-            - PROVISIONED
+        ProvisionedThroughput: # use these three lines when running offline
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+#        ProvisionedThroughput: # use these ten lines when deploying to AWS
+#          Fn::If:
+#            - IsTest
+#            - ReadCapacityUnits: 1
+#              WriteCapacityUnits: 1
+#            - Ref: 'AWS::NoValue'
+#        BillingMode:
+#          Fn::If:
+#            - IsProd
+#            - PAY_PER_REQUEST
+#            - PROVISIONED
         AttributeDefinitions:
           - AttributeName: fingerprint
             AttributeType: S

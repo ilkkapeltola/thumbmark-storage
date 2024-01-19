@@ -17,7 +17,6 @@
     "@types/aws-lambda": "^8.10.131",
     "@types/node": "^18.19.4",
     "aws-sdk": "^2.1532.0",
-    "dotenv": "^16.3.1",
     "esbuild": "^0.19.0",
     "serverless-better-credentials": "^2.0.0",
     "serverless-domain-manager": "^7.3.3",
@@ -25,6 +24,7 @@
     "serverless-dynamodb": "^0.2.47",
     "serverless-esbuild": "^1.46.0",
     "serverless-offline": "^13.3.2",
+    "serverless-plugin-utils": "^0.2.0",
     "tslint": "^5.5.0",
     "tslint-config-standard": "^6.0.1",
     "typescript": "^5.1.6"
