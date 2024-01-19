@@ -1,8 +1,10 @@
 import { APIGatewayProxyEvent, Context, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 import { dynamoDb } from './dynamo'
 import { PutItemCommand, PutItemInput } from '@aws-sdk/client-dynamodb'
+import { createValidationErrors } from './validation'
+import { getHeaders } from './headers'
 
-interface eventBodyInterface {
+export interface eventBodyInterface {
   fingerprint: string,
   key: string,
   namespace: string,
@@ -10,15 +12,26 @@ interface eventBodyInterface {
 }
 
 export  const  create : APIGatewayProxyHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-  try  {
-    const data: eventBodyInterface = JSON.parse(event.body || '{}');
-    const errors = validationErrors(data)
-    if (errors) {
-      throw errors
+  const headers = getHeaders(event)
+  const errors = createValidationErrors(event)
+  const data: eventBodyInterface = JSON.parse(event.body || '{}');
+
+  // If there are validation errors, just throw them
+  if (errors) {
+    throw errors
+  }
+
+  // If the origin is not allowed, return 403
+  if (!headers.hasOwnProperty('Access-Control-Allow-Origin'))
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ message: 'Origin not allowed: ' + " " + event.headers.origin }),
+      headers: headers
     }
 
+  // The actual logic
+  try  {
     const { fingerprint, key, namespace, value } = data;
-
     const namespaceAndFingerprint = [namespace, fingerprint].join('|')
     const expiresAt = Math.floor(new Date().getTime() / 1000) + 24 * 3600
   
@@ -37,50 +50,18 @@ export  const  create : APIGatewayProxyHandler = async (event: APIGatewayProxyEv
     const response: APIGatewayProxyResult = {
       statusCode: result.$metadata.httpStatusCode || 200,
       body: JSON.stringify(result),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow_headers': true,
-        'Content-type': 'application/json'
-      }
+      headers: headers
     }
-
-    console.log(params)
 
     return response
     
   } catch (error) {
-    console.error(error)
-    //throw new Error('Couldn\'t create the todo item.')
+    
+    // If we threw errors, return internal server error
     return {
       statusCode: 500,
       body: JSON.stringify(error.message),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow_headers': true,
-        'Content-type': 'application/json'
-      }
+      headers: headers
     }
   }
-}
-
-const validationErrors = (data: eventBodyInterface): Error | null => {
-  const { fingerprint, key, namespace, value } = data;
-  const errors: string[] = [];
-  
-  if (typeof fingerprint !== 'string' || typeof key !== 'string' || typeof namespace !== 'string' || typeof value !== 'string') {
-    errors.push('fingerprint, key, namespace, and value are all required parameters and need to be strings')
-  }
-
-  if (fingerprint.length < 5 || key.length < 1 || namespace.length < 5) {
-    errors.push('minimum length of parameters not satisfied: fingerprint(5), key(1), namespace(5)')
-  }
-
-  if (fingerprint.length > 100 || key.length > 100 || namespace.length > 100 || value.length > 2000) {
-    errors.push('maximum length of parameters exceeded: fingerprint(100), key(100), namespace(100), value(2000)')
-  }
-
-  if (errors.length > 0) {
-    return new Error(errors.join(', '))
-  }
-  return null
 }

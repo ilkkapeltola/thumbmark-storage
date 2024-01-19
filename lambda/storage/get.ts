@@ -3,22 +3,20 @@
 import { dynamoDb } from './dynamo'
 import { APIGatewayProxyEvent, Context, APIGatewayProxyResult, Handler } from 'aws-lambda'
 import { GetItemCommand, GetItemInput } from '@aws-sdk/client-dynamodb'
+import { getValidationErrors } from './validation'
+import { getHeaders } from './headers'
 
 export const get: Handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-  const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
-  const requestOrigin = event.headers.origin || event.headers.referer as string
-  
-  let headers = {
-    'Content-type': 'application/json'
+  const errors = getValidationErrors(event)
+  const headers = getHeaders(event)
+
+  if (errors) {
+    throw errors
   }
-  if (allowedOrigins.includes(requestOrigin))
-    headers['Access-Control-Allow-Origin'] = requestOrigin
-  else if (allowedOrigins.includes('*'))
-    headers['Access-Control-Allow-Origin'] = '*'
-  else
+  if (!headers.hasOwnProperty('Access-Control-Allow-Origin')) // this means the origin is not allowed
     return {
       statusCode: 403,
-      body: JSON.stringify({ message: 'Origin not allowed: ' + " " + requestOrigin }),
+      body: JSON.stringify({ message: 'Origin not allowed: ' + " " + event.headers.origin }),
       headers: headers
     }
 
@@ -42,7 +40,7 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
     if (!result.Item) {
       return {
         statusCode: 200,
-        body: JSON.stringify({ message: 'Item not found: ' + " " + requestOrigin + " " + allowedOrigins as string }),
+        body: JSON.stringify({ message: 'Item not found' }),
         headers: headers
       }
       
