@@ -1,8 +1,7 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
 
 interface Headers {
-    'Access-Control-Allow-Origin'?: string,
-    'Content-type': string,
+    [header: string]: string | number | boolean
     }
 
 export const getHeaders = (event: APIGatewayProxyEvent): Headers => {
