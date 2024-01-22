@@ -1,6 +1,6 @@
-# Thumbmark Store backend
+# Thumbmark Storage backend
 
-This an example backend for the Thumbmark Store. It is implemented using the Serverless framework, written in Typescript.
+This an example backend for the Thumbmark Storage. It is implemented using the Serverless framework, written in Typescript.
 
 It's a simple lambda function with a dynamodb table. Read more about this project from the top level readme file.
 

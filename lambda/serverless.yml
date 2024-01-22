@@ -30,7 +30,7 @@ plugins:
   - serverless-plugin-utils
   - serverless-esbuild
   - serverless-dynamodb
-  - serverless-domain-manager # uncomment if you want to use custom domain.
+  - serverless-domain-manager # Comment out if not using a custom domain
   - serverless-offline
 
 custom:
@@ -96,7 +96,12 @@ resources:
 #        ProvisionedThroughput: # use these three lines when running offline
 #          ReadCapacityUnits: 1
 #          WriteCapacityUnits: 1
-
+        ProvisionedThroughput:
+          Fn::If:
+            - IsProvisioned
+            - ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+            - Ref: 'AWS::NoValue'
         BillingMode: ${self:custom.BillingMode.${self:provider.stage}}
         AttributeDefinitions:
           - AttributeName: fingerprint

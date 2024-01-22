@@ -17,11 +17,11 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'ThumbmarkStore.js',
+    filename: 'ThumbmarkStorage.js',
     path: path.resolve(__dirname, 'build'),
     //module: 'esnext',
     library: {
-      name: 'ThumbmarkStore',
+      name: 'ThumbmarkStorage',
       type: 'umd'
     }
   },

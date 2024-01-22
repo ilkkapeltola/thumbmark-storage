@@ -1,4 +1,4 @@
-# ThumbmarkStore
+# ThumbmarkStorage
 
 ThumbmarkStore uses the browser fingerprinting library [ThumbmarkJS](https://github.com/ilkkapeltola/thumbmarkjs) to implement a handy store that behaves in a similar way as `localStore`.
 
