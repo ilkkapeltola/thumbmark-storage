@@ -6,21 +6,24 @@ It's a simple lambda function with a dynamodb table. Read more about this projec
 
 ## Installation steps
 
-To initialize, clone the
+To initialize, clone the repo and run:
 
 ```
 npm install
 ```
 
-To run things locally, you can do this:
+Create your .env file. Have a look at the [.env.example](.env.example) for ... an example.
 
+To run things locally, you can do the following.
+
+:warning: **NOTE!** look into serverless.yml for some comments first. This seems to fail with the conditional ProvisionedThroughput configuration. Change that first and then run locally, so:
 
 ```
 serverless dynamodb install
 serverless offline start
 ```
 
-to deploy, just run
+to deploy to `test`, just run
 
 ```
 serverless deploy
