@@ -7,6 +7,7 @@ publish:
 latest:
 	make publish
 	aws s3 cp ./build/ThumbmarkStorage.js $(CDN_BUCKET)/thumbmark/latest/ThumbmarkStorage.js --profile $(AWS_PROFILE)
+	npm publish --access public
 
 invalidate:
 	aws cloudfront create-invalidation --distribution-id $(CDN_DISTRIBUTION) --paths "/latest/ThumbmarkStorage.js" --profile $(AWS_PROFILE)

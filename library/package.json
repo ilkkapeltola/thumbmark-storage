@@ -1,13 +1,19 @@
 {
-  "name": "thumbmarkjs-storage",
+  "name": "@thumbmarkjs/thumbmarkjs-storage",
   "version": "1.0.0",
   "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "public": true,
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx webpack"
+    "build": "npx webpack && npx tsc"
   },
   "author": "Ilkka Peltola",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
