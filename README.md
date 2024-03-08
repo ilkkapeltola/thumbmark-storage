@@ -33,7 +33,7 @@ The library `ThumbmarkStorage` has methods `getItem(key)` and `setItem(key, valu
 
 When calling `getItem('foo')`, similarly, the backend knows all three (assuming a stable browser fingerprint) and returns the value `bar`. Thus, you're able to use the same storage from any page. This is useful for example when transferring a visitor from one page to another and you can't use cookies.
 
-Why `namespace`? You can set that to be anything. The idea of the namespace is to avoid collisions with other sites happening to use the same keys and to avoid fingerprint collisions. You can safely use the key `id` in your own namespace.
+Why `namespace`? You can set that to be anything. The idea of the namespace is to avoid collisions with other sites happening to use the same keys and to avoid fingerprint collisions. You can for example safely use the key `id` in your own namespace. Without a namespace, common keys like `id` could cause collisions or overwriting data.
 
 ## Why not use cookies?
 
