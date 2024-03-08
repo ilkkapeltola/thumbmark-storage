@@ -29,7 +29,7 @@ And after, gets it back and prints to console. Both methods return a promise.
 
 ## How it works
 
-The library `ThumbmarkStorage` has methods `getItem(key)` and `putItem(key, value)`. Since the `ThumbmarkStorage` utilizes the fingerprinting library `ThumbmarkJS`, it calculates the fingerprint, which acts (together with a `namespace`, more about that later) as the unique store identifyer. When calling the `setItem('foo', 'bar')`, the backend stores the value `bar` together with the `namespace`, `fingerprint` and `key`.
+The library `ThumbmarkStorage` has methods `getItem(key)` and `setItem(key, value)`. Since the `ThumbmarkStorage` utilizes the fingerprinting library `ThumbmarkJS`, it calculates the fingerprint, which acts (together with a `namespace`, more about that later) as the unique store identifyer. When calling the `setItem('foo', 'bar')`, the backend stores the value `bar` together with the `namespace`, `fingerprint` and `key`.
 
 When calling `getItem('foo')`, similarly, the backend knows all three (assuming a stable browser fingerprint) and returns the value `bar`. Thus, you're able to use the same storage from any page. This is useful for example when transferring a visitor from one page to another and you can't use cookies.
 
