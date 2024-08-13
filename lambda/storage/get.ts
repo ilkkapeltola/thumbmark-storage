@@ -7,12 +7,13 @@ import { getValidationErrors } from './validation'
 import { getHeaders } from './headers'
 
 export const get: Handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  
   const errors = getValidationErrors(event)
-  const headers = getHeaders(event)
-
   if (errors) {
     throw errors
   }
+
+  const headers = getHeaders(event)
   if (!headers.hasOwnProperty('Access-Control-Allow-Origin')) // this means the origin is not allowed
     return {
       statusCode: 403,
@@ -21,9 +22,6 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
     }
 
   try {
-
-    const errors = validationErrors(event)
-    if (errors) { throw errors }
 
     const namespaceAndFingerprint: string = [event.pathParameters?.namespace, event.pathParameters?.fingerprint].join('|')
     const params: GetItemInput = {
@@ -57,17 +55,4 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
       headers: headers
     }
   }
-}
-
-const validationErrors = (event: APIGatewayProxyEvent): Error => {
-    if (typeof event.pathParameters?.fingerprint !== 'string'||
-        typeof event.pathParameters.key !== 'string' ||
-        typeof event.pathParameters.namespace !== 'string' ||
-        event.pathParameters.fingerprint.length < 5 ||
-        event.pathParameters.key.length < 1 ||
-        event.pathParameters.namespace.length < 5) {
-        console.log(event.pathParameters)
-        return new Error('fingerprint(5), key(1) and namespace(5) are all required parameters with minimum lengths')
-    }
-    return null
 }
