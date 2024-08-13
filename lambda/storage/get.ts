@@ -7,11 +7,6 @@ import { getValidationErrors } from './validation'
 import { getHeaders } from './headers'
 
 export const get: Handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
-  
-  const errors = getValidationErrors(event)
-  if (errors) {
-    throw errors
-  }
 
   const headers = getHeaders(event)
   if (!headers.hasOwnProperty('Access-Control-Allow-Origin')) // this means the origin is not allowed
@@ -22,6 +17,11 @@ export const get: Handler = async (event: APIGatewayProxyEvent, context: Context
     }
 
   try {
+
+    const errors = getValidationErrors(event)
+    if (errors) {
+      throw errors
+    }
 
     const namespaceAndFingerprint: string = [event.pathParameters?.namespace, event.pathParameters?.fingerprint].join('|')
     const params: GetItemInput = {
